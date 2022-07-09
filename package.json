@@ -1,11 +1,21 @@
 {
   "name": "auth",
   "version": "1.0.0",
-  "description": "Authentication proxy",
-  "main": "index.js",
+  "description": "Peer bet",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "netlify": "netlify dev --debug",
+    "functions": "netlify functions:serve"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "awesome-phonenumber": "^3.2.0",
+    "elarian": "^0.2.25",
+    "xstate": "^4.32.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@netlify/functions": "^1.0.0",
+    "netlify-cli": "^10.3.1"
+  }
 }
