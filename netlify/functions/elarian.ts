@@ -4,8 +4,7 @@ import {
   NotificationCallback,
   ReceivedMediaNotification,
 } from "elarian";
-import { interpret } from "xstate";
-import { newMachineInstance } from "./machine";
+import { BetMachine, CustomerHistory } from "./machine";
 
 const client = new Elarian({
   orgId: process.env.elarian_org_key || "el_org_eu_BM7X6M",
@@ -25,45 +24,36 @@ export function start() {
 
 async function onConnected() {
   console.log("connected");
-
-  const me = new client.Customer({
-    number: "+254703784709",
-    provider: "cellular",
-  });
 }
 
-export type AppData = {
-  visitCount?: number;
-  proposing?: [];
-  opposing?: [];
-};
-
 function onReceivedTelegram(
-  notification: ReceivedMediaNotification,
+  _notification: ReceivedMediaNotification,
   customer: Customer,
-  appData: AppData | undefined,
+  appData: CustomerHistory | undefined,
   callback: NotificationCallback | undefined
 ) {
-  let betMachine = newMachineInstance(customer, appData);
-
-  let betService = interpret(betMachine)
-    .onTransition(function (state) {
-      console.log(state.value);
-    })
-    .start();
-
+  let betService = BetMachine.Create(customer, appData);
   betService.send({ type: "BEGIN" });
-  console.log(
-    betService.state.context.message,
-    JSON.stringify(Object.assign(customer, notification))
-  );
 
-  customer.sendMessage(
-    { channel: "telegram", number: "peer" },
-    { body: { text: betService.state.context.message } }
-  );
+  // customer.sendMessage(
+  //   { channel: "telegram", number: "peer" },
+  //   { body:  }
+  // );
+
+  if (callback) {
+    let newAppData = BetMachine.Store(betService.state);
+    callback({ text: betService.state.context.message }, newAppData);
+  }
+}
+
+function BettingBot(channel: string) {
+  function askNextQuestion() {}
+  function startSession() {}
+
+  return {
+    startSession,
+    askNextQuestion,
+  };
 }
 
 start();
-
-// https://medium.com/geekculture/orchestrating-serverless-from-serverless-bcdb751ddd6c
